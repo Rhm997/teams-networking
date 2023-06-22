@@ -1,0 +1,25 @@
+[
+  {
+    "id": 1,
+    "promotion": "Test",
+    "members": "Test1",
+    "name": "Teams Networking",
+    "url": "google.com"
+  },
+
+  {
+    "id": 2,
+    "promotion": "Test",
+    "members": "Test2",
+    "name": "Teams Networking",
+    "url": "google.com"
+  },
+
+  {
+    "id": 3,
+    "promotion": "Test",
+    "members": "Test3",
+    "name": "trei",
+    "url": "google.com"
+  }
+]
