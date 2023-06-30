@@ -1,6 +1,29 @@
 h1{
     color: #057988;
 }
+body{
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+    margin: 0;
+}
+
+header{
+    display: flex;
+    flex-direction: row;
+}
+
+header h1{
+    margin: 0 10px 0 10px;
+}
+header h2{
+
+}
+
+#main{
+    flex: 1;
+}
+
 
 #teamsTable{
     width: 100%;
