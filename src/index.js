@@ -110,17 +110,20 @@ function onSubmit(e) {
     team.id = editId;
     updateTeamRequest(team).then(status => {
       if (status.success) {
-        loadTeams();
+        const edited = allTeams.find(t => t.id === editId);
+        Object.assign(edited, team);
+         
+        displayTeams(allTeams)
         $("#teamsForm").reset();
       }
     });
   } else {
     createTeamRequest(team).then(status => {
       if (status.success) {
-        // v.1
-        //window.location.reload();
-        // v.2
-        loadTeams();
+        team.id = status.id;
+        allTeams.push(team);
+        displayTeams(allTeams)
+
         $("#teamsForm").reset();
       }
     });
