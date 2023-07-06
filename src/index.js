@@ -6,8 +6,8 @@ function $(selector) {
   return document.querySelector(selector);
 }
 
-function getTeamAsHtml({id, promotion, members, name, url}) {
-  const displayUrl = url.startsWith("https://github.com/") ? url.substring(19) : url
+function getTeamAsHtml({ id, promotion, members, name, url }) {
+  const displayUrl = url.startsWith("https://github.com/") ? url.substring(19) : url;
   return `<tr>
     <td>${promotion}</td>
     <td>${members}</td>
@@ -23,12 +23,12 @@ function getTeamAsHtml({id, promotion, members, name, url}) {
 let previewDisplayTeams = [];
 
 function displayTeams(teams) {
-  if(previewDisplayTeams === teams){
-    console.warn('aici');
-    return; 
+  if (previewDisplayTeams === teams) {
+    console.warn("aici");
+    return;
   }
-  if(JSON.stringify(previewDisplayTeams) == JSON.stringify(teams)){
-    console.warn('same');
+  if (JSON.stringify(previewDisplayTeams) == JSON.stringify(teams)) {
+    console.warn("same");
     return;
   }
 
@@ -37,20 +37,22 @@ function displayTeams(teams) {
   $("#teamsTable tbody").innerHTML = teamsHTML.join("");
 }
 
-function loadTeams() {
-  fetch("http://localhost:3000/teams-json", {
+function loadTeamsRequest() {
+  return fetch("http://localhost:3000/teams-json", {
     method: "GET",
     headers: {
       "Content-Type": "application/json"
     }
-  })
-    .then(r => r.json())
+  }).then(r => r.json());
+}
 
-    .then(teams => {
-      allTeams = teams;
-      displayTeams(teams);
-      console.warn('load');
-    });
+function loadTeams() {
+  return loadTeamsRequest().then(teams => {
+    allTeams = teams;
+    displayTeams(teams);
+    console.warn("load");
+    return teams;
+  });
 }
 
 function deleteTeamRequest(id, callback) {
@@ -96,7 +98,7 @@ function startEdit(id) {
   setTeamValues(team);
 }
 
-function setTeamValues({promotion, members, name, url}) {
+function setTeamValues({ promotion, members, name, url }) {
   $("#promotion").value = promotion;
   $("#members").value = members;
   $("input[name=name]").value = name;
@@ -121,19 +123,18 @@ function onSubmit(e) {
   const team = getTeamValues();
   if (editId) {
     team.id = editId;
-    updateTeamRequest(team).then(({success}) => {
+    updateTeamRequest(team).then(({ success }) => {
       if (success) {
         allTeams = allTeams.map(t => {
-          if(t.id == editId){
+          if (t.id == editId) {
             return {
               ...t,
               ...team
             };
           }
           return t;
-        }
-        )
-        displayTeams(allTeams)
+        });
+        displayTeams(allTeams);
         $("#teamsForm").reset();
       }
     });
@@ -141,8 +142,8 @@ function onSubmit(e) {
     createTeamRequest(team).then(status => {
       if (status.success) {
         team.id = status.id;
-        allTeams = [...allTeams, team ]
-        displayTeams(allTeams)
+        allTeams = [...allTeams, team];
+        displayTeams(allTeams);
 
         $("#teamsForm").reset();
       }
@@ -188,5 +189,20 @@ function initEvents() {
   });
 }
 
-loadTeams();
+function sleep(ms) {
+  return new Promise(resolve => {
+    setTimeout(() => resolve(), ms);
+  });
+}
+
+sleep(2000).then(() => {
+  console.warn("ready");
+});
+
 initEvents();
+
+(async () => {
+  $("#teamsForm").classList.add("loading-mask");
+  const teams = await loadTeams();
+  $("#teamsForm").classList.remove("loading-mask");
+})();
