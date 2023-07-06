@@ -6,22 +6,34 @@ function $(selector) {
   return document.querySelector(selector);
 }
 
-function getTeamAsHtml(team) {
+function getTeamAsHtml({id, promotion, members, name, url}) {
+  const displayUrl = url.startsWith("https://github.com/") ? url.substring(19) : url
   return `<tr>
-    <td>${team.promotion}</td>
-    <td>${team.members}</td>
-    <td>${team.name}</td>
-    <td>${team.url}</td>
+    <td>${promotion}</td>
+    <td>${members}</td>
+    <td>${name}</td>
+    <td><a href="${url}" target="_blank">${displayUrl}</a></td>
     <td>
-      <a data-id=${team.id} class="remove-btn" >✖</a>
-      <a data-id=${team.id} class="edit-btn"> &#9998; </a>
+      <a data-id=${id} class="remove-btn" >✖</a>
+      <a data-id=${id} class="edit-btn"> &#9998; </a>
     </td>
     </tr>`;
 }
 
-function displayTeams(teams) {
-  const teamsHTML = teams.map(getTeamAsHtml);
+let previewDisplayTeams = [];
 
+function displayTeams(teams) {
+  if(previewDisplayTeams === teams){
+    console.warn('aici');
+    return; 
+  }
+  if(JSON.stringify(previewDisplayTeams) == JSON.stringify(teams)){
+    console.warn('same');
+    return;
+  }
+
+  previewDisplayTeams = teams;
+  const teamsHTML = teams.map(getTeamAsHtml);
   $("#teamsTable tbody").innerHTML = teamsHTML.join("");
 }
 
@@ -37,6 +49,7 @@ function loadTeams() {
     .then(teams => {
       allTeams = teams;
       displayTeams(teams);
+      console.warn('load');
     });
 }
 
@@ -83,11 +96,11 @@ function startEdit(id) {
   setTeamValues(team);
 }
 
-function setTeamValues(team) {
-  $("#promotion").value = team.promotion;
-  $("#members").value = team.members;
-  $("input[name=name]").value = team.name;
-  $("input[name=url]").value = team.url;
+function setTeamValues({promotion, members, name, url}) {
+  $("#promotion").value = promotion;
+  $("#members").value = members;
+  $("input[name=name]").value = name;
+  $("input[name=url]").value = url;
 }
 
 function getTeamValues() {
@@ -108,11 +121,18 @@ function onSubmit(e) {
   const team = getTeamValues();
   if (editId) {
     team.id = editId;
-    updateTeamRequest(team).then(status => {
-      if (status.success) {
-        const edited = allTeams.find(t => t.id === editId);
-        Object.assign(edited, team);
-         
+    updateTeamRequest(team).then(({success}) => {
+      if (success) {
+        allTeams = allTeams.map(t => {
+          if(t.id == editId){
+            return {
+              ...t,
+              ...team
+            };
+          }
+          return t;
+        }
+        )
         displayTeams(allTeams)
         $("#teamsForm").reset();
       }
@@ -121,7 +141,7 @@ function onSubmit(e) {
     createTeamRequest(team).then(status => {
       if (status.success) {
         team.id = status.id;
-        allTeams.push(team);
+        allTeams = [...allTeams, team ]
         displayTeams(allTeams)
 
         $("#teamsForm").reset();
